@@ -1,0 +1,114 @@
+<?php
+/**
+ * @file
+ * Builds page, form and reviews table for testreviews.
+ */
+
+/**
+ * Implements hook_menu(). 
+ */
+function testreviews_menu() {
+    $items = array();
+    
+    // основная форма и таблица
+    $items['testreviews-page'] = array(
+        'title' => t('Reviews'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('testreviews_page_form'),
+        'access callback' => TRUE,
+        'file' => 'testreviews.pages.inc',
+    );
+    
+    // представление отдельной записи
+    $items['testreviews-page/%'] = array(
+        'title' => t('View review'),
+        'page callback' => 'testreviews_view_review',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+        'file' => 'testreviews.pages.inc',
+    );
+    
+    return $items;
+}
+
+/**
+ * Validate function for testreviews_page_form. 
+ */
+function testreviews_page_form_validate($form, &$form_state) {
+    // имитация полноценной валидации данных
+    if (empty($form_state['values']['title'])) {
+        form_set_error('title', t('You forgot to set title'));
+    }
+    if (is_numeric($form_state['values']['title'])) {
+        form_set_error('title', t('Title must be a word'));
+    }
+}
+
+/**
+ * Submit function for testreviews_page_form.
+ */
+function testreviews_page_form_submit($form, &$form_state) {
+    $title = $form_state['values']['title'];
+    $category = $form_state['values']['category'];
+    $actuality = $form_state['values']['actuality'];
+    $published = $form_state['values']['published'];
+    
+    $fields = array(
+        'id' => null,
+        'title' => $title,
+        'category' => $category,
+        'actuality' => $actuality,
+        'published' => $published
+    );
+    
+    db_insert('testreviews')->fields($fields)->execute();
+    
+    drupal_set_message(t('Data succesfully saved'));
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function testreviews_block_info(){
+    // для включения блока на страницу нужно в admin/structure/block
+    // подключить 'Testreviews links block' в регионе 'Content'
+    // в конфигурации блока нужно отметить "Only the listed pages"
+    // и добавить "testreviews-page"
+    $blocks = array();
+    
+    $blocks[0]['info'] = t('Testreviews links block');
+    $blocks[0]['cache'] = DRUPAL_NO_CACHE;
+     
+    return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function testreviews_block_view() {
+    $reviews_message = array(
+        'has_reviews' => t("Here's the list of published reviews"),
+        'no_reviews' => t("There's no published reviews yet")
+    );
+    
+    $blocks = array();
+    $blocks['subject'] = t('Reviews list');
+    $blocks['content'] = theme('testreviews_block', array('reviews_message' => $reviews_message));
+    
+    return $blocks;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function testreviews_theme() {
+    return array(
+        'testreviews_block' => array(
+            'variables' => array(
+                'reviews_message' => NULL
+            ),
+            'file' => 'testreviews.block.inc',
+            'template' => 'testreviews-block',
+        )
+    );
+}

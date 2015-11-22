@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the testreviews module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function testreviews_schema() {
+    $schema['testreviews'] = array(
+        'fields' => array(
+            'id' => array(
+                'type' => 'serial',
+                'not null' => TRUE
+            ),
+            'title' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => ''
+            ),
+            'category' => array(
+                'type' => 'varchar',
+                'length' => 255, 
+                'not null' => TRUE,
+                'default' => ''
+            ),
+            'actuality' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => ''
+            ),
+            'published' => array(
+                'type' => 'varchar',
+                'length' => 10,
+                'not null' => TRUE,
+                'default' => '0'
+            )
+        ),
+    'primary key' => array('id')
+    );
+    return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function testreviews_uninstall() {
+    cache_clear_all('testreviews', 'cache', TRUE);
+    menu_rebuild();
+}
